@@ -7,12 +7,13 @@ import fs from "fs";
 const LOG_FILE = "tornado_log_eth.csv";
 
 if (!fs.existsSync(LOG_FILE)) {
-    fs.writeFileSync(LOG_FILE, "time,tx,relayer,pool,service_fee,gas_fee,burned_torn,estimate_earning\n");
+    fs.writeFileSync(LOG_FILE, "time,tx,relayer,pool,service_fee,gas_fee,burned_torn,remaining_torn,estimate_earning\n");
 }
 
-const provider = new ethers.getDefaultProvider();
+const provider = new ethers.providers.InfuraProvider(1, "d1399b36dc454c94897402cb88aba997");
 
-let registryIface = new ethers.utils.Interface(TORNADO_RELAYER_REGISTRY);
+const registryIface = new ethers.utils.Interface(TORNADO_RELAYER_REGISTRY);
+const registry = new ethers.Contract(TORNADO_RELAYER_REGISTRY_ADDRESS, TORNADO_RELAYER_REGISTRY, provider);
 
 const eths = [0.1, 1, 10, 100];
 const addrs = [
@@ -44,19 +45,24 @@ for (let i = 0; i < eths.length; i++) {
             burnTorn = ethers.utils.formatEther(burnEvent.args.amountBurned);
         }
         
-        var profit = fee.sub(gasFee);
+        let profit = fee.sub(gasFee);
         if (i > 0) {
             const burnFee = ethers.utils.parseEther(eths[i].toString()).mul("3").div("1000");
             profit = profit.sub(burnFee);
         }
         const formatedProfit = ethers.utils.formatEther(profit);
         const timeStr = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-        fs.appendFileSync(LOG_FILE, `${timeStr},${tx.transactionHash},${relayer},${eths[i]},${formatedFee},${formatedGas},${burnTorn},${formatedProfit}\n`);
+
+        const remainingTorn = await registry.getRelayerBalance(relayer);
+        let formatRemaining = ethers.utils.formatEther(remainingTorn);
+        formatRemaining = parseFloat(formatRemaining).toFixed(2);
+
+        fs.appendFileSync(LOG_FILE, `${timeStr},${tx.transactionHash},${relayer},${eths[i]},${formatedFee},${formatedGas},${burnTorn},${formatRemaining},${formatedProfit}\n`);
 
         if (relayer == WATCHING_ADDRESS) {
             const title = `# ETH: ${eths[i]}\n`;
             const txInfo = `tx: [${tx.transactionHash}](https://etherscan.io/tx/${tx.transactionHash})`;
-            const info = `ServiceFee: ${formatedFee}\nGasFee: ${formatedGas}\nBurnedTORN: ${burnTorn}\nEstimateEarn:${formatedProfit}\n`;
+            const info = `ServiceFee: ${formatedFee}\nGasFee: ${formatedGas}\nBurnedTORN: ${burnTorn}\nRemainingTORN: ${formatRemaining}\nEstimateEarn:${formatedProfit}\n`;
             noti.markdown(`${title} ${txInfo} ${info}`);
         }
 
