@@ -17,15 +17,21 @@ const registry = new ethers.Contract(TORNADO_RELAYER_REGISTRY_ADDRESS, TORNADO_R
 
 const eths = [0.1, 1, 10, 100];
 const addrs = [
-    TORNADO_CASH_0_1ETH_ADDRESS, 
-    TORNADO_CASH_1ETH_ADDRESS, 
-    TORNADO_CASH_10ETH_ADDRESS, 
+    TORNADO_CASH_0_1ETH_ADDRESS,
+    TORNADO_CASH_1ETH_ADDRESS,
+    TORNADO_CASH_10ETH_ADDRESS,
     TORNADO_CASH_100ETH_ADDRESS
 ];
 
 for (let i = 0; i < eths.length; i++) {
     const ethPool = new ethers.Contract(addrs[i], TORNADO_CASH_ETH_ABI, provider)
     ethPool.on(ethPool.filters.Withdrawal(), async (to, nullifierHash, relayer, fee, event) => {
+
+        if (fee.isZero()) {
+            console.log("custom withdraw!");
+            return
+        }
+
         const formatedFee = ethers.utils.formatEther(fee);
         const tx = await event.getTransactionReceipt();
         console.log(tx);
@@ -44,7 +50,7 @@ for (let i = 0; i < eths.length; i++) {
         if (burnEvent != null && burnEvent.name == "StakeBurned") {
             burnTorn = ethers.utils.formatEther(burnEvent.args.amountBurned);
         }
-        
+
         let profit = fee.sub(gasFee);
         if (i > 0) {
             const burnFee = ethers.utils.parseEther(eths[i].toString()).mul("3").div("1000");
