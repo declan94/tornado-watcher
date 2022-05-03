@@ -10,7 +10,7 @@ if (!fs.existsSync(LOG_FILE)) {
     fs.writeFileSync(LOG_FILE, "time,tx,relayer,pool,service_fee,gas_fee,burned_torn,remaining_torn,estimate_earning\n");
 }
 
-const provider = new ethers.providers.InfuraProvider(1, "a48b096d52314a0b901370f43bca5cbd");
+const provider = new ethers.providers.InfuraProvider(1, "d1399b36dc454c94897402cb88aba997");
 
 const registryIface = new ethers.utils.Interface(TORNADO_RELAYER_REGISTRY);
 const registry = new ethers.Contract(TORNADO_RELAYER_REGISTRY_ADDRESS, TORNADO_RELAYER_REGISTRY, provider);
