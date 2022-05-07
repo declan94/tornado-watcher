@@ -6,9 +6,12 @@ import fs from "fs";
 
 const LOG_FILE = "tornado_log_bsc.csv";
 
-if (!fs.existsSync(LOG_FILE)) {
-    fs.writeFileSync(LOG_FILE, "time,tx,relayer,pool,service_fee,gas_fee,burned_torn,remaining_torn,estimate_earning\n");
+function ensureLogFile() {
+    if (!fs.existsSync(LOG_FILE)) {
+        fs.writeFileSync(LOG_FILE, "time,tx,relayer,pool,service_fee,gas_fee,burned_torn,remaining_torn,estimate_earning\n");
+    }
 }
+ensureLogFile();
 
 const ethProvider = new ethers.providers.InfuraProvider(1, "a48b096d52314a0b901370f43bca5cbd");
 const bscProvider = new ethers.providers.JsonRpcProvider("https://bsc-dataseed.binance.org/")
@@ -63,6 +66,7 @@ for (let i = 0; i < bnbValues.length; i++) {
         let formatRemaining = ethers.utils.formatEther(remainingTorn);
         formatRemaining = parseFloat(formatRemaining).toFixed(2);
 
+        ensureLogFile();
         fs.appendFileSync(LOG_FILE, `${timeStr},${tx.transactionHash},${relayer},${bnbValues[i]},${formatedFee},${formatedGas},${burnTorn},${formatRemaining},${formatedProfit}\n`);
 
         if (relayer == WATCHING_ADDRESS) {

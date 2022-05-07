@@ -6,9 +6,13 @@ import fs from "fs";
 
 const LOG_FILE = "tornado_log_eth.csv";
 
-if (!fs.existsSync(LOG_FILE)) {
-    fs.writeFileSync(LOG_FILE, "time,tx,relayer,pool,service_fee,gas_fee,burned_torn,remaining_torn,estimate_earning\n");
+function ensureLogFile() {
+    if (!fs.existsSync(LOG_FILE)) {
+        fs.writeFileSync(LOG_FILE, "time,tx,relayer,pool,service_fee,gas_fee,burned_torn,remaining_torn,estimate_earning\n");
+    }
 }
+
+ensureLogFile();
 
 const provider = new ethers.providers.InfuraProvider(1, "d1399b36dc454c94897402cb88aba997");
 
@@ -63,6 +67,7 @@ for (let i = 0; i < eths.length; i++) {
         let formatRemaining = ethers.utils.formatEther(remainingTorn);
         formatRemaining = parseFloat(formatRemaining).toFixed(2);
 
+        ensureLogFile();
         fs.appendFileSync(LOG_FILE, `${timeStr},${tx.transactionHash},${relayer},${eths[i]},${formatedFee},${formatedGas},${burnTorn},${formatRemaining},${formatedProfit}\n`);
 
         if (relayer == WATCHING_ADDRESS) {
