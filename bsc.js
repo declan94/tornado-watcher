@@ -13,7 +13,7 @@ function ensureLogFile() {
 }
 ensureLogFile();
 
-const ethProvider = new ethers.providers.InfuraProvider(1, "a48b096d52314a0b901370f43bca5cbd");
+const ethProvider = new ethers.providers.AlchemyProvider(1, "EsSJ2LeUkuoIDiOUJ-Sr5Xdi0xBrxirQ");
 const bscProvider = new ethers.providers.JsonRpcProvider("https://bsc-dataseed.binance.org/")
 
 const registry = new ethers.Contract(TORNADO_RELAYER_REGISTRY_ADDRESS, TORNADO_RELAYER_REGISTRY, ethProvider);
